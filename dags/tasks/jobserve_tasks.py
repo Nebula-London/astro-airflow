@@ -9,7 +9,8 @@ logic has been split into small, focused packages under ``dags/``:
 * ``dags.utils.fetching`` -- listing and detail-page retrieval;
 * ``dags.utils.dedupe`` -- state / prior extract de-duplication;
 * ``dags.utils.reporting`` -- counts and summary tables;
-* ``dags.utils.output`` -- JSON / JD / state / tracker writes.
+* ``dags.utils.output`` -- JSON / JD / state / tracker writes;
+* ``dags.utils.nosql`` -- hashed rows pushed to Oracle NoSQL.
 
 Two rules are applied throughout: every helper is defined at module level
 (there are no functions inside functions and no lambdas), and there are no
@@ -25,6 +26,7 @@ from dags.connections import read_search_urls
 from dags.utils.config import build_config, load_yaml
 from dags.utils.dedupe import deduplicate
 from dags.utils.fetching import fetch_searches, parse_fetched_jobs
+from dags.utils.nosql import push_jobs
 from dags.utils.output import write_all
 from dags.utils.reporting import counts_table
 
@@ -67,3 +69,9 @@ def report_counts(result: dict) -> dict:
 def write_results(result: dict, config: dict) -> str:
     """Write the dated JSON, JD text, state file and tracker CSV."""
     return write_all(result, config)
+
+
+@task
+def push_to_nosql(result: dict, config: dict) -> int:
+    """Upsert the new hashed roles into the Oracle NoSQL seen table."""
+    return push_jobs(config, result["new"])

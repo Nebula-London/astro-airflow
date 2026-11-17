@@ -14,6 +14,7 @@ from dags.tasks.jobserve_tasks import (
     fetch_search_codes,
     load_jobserve_config,
     parse_job_details,
+    push_to_nosql,
     report_counts,
     write_results,
 )
@@ -30,7 +31,7 @@ def build_jobserve_dag(
     """Wire the module-level TaskFlow callables into the final DAG."""
     with DAG(
         dag_id=dag_id,
-        description="Find new JobServe roles from saved searches and write today's JSON",
+        description="Find new JobServe roles, write today's JSON and push hashes to NoSQL",
         schedule="0 7 * * *",
         start_date=datetime(2024, 1, 1, tzinfo=timezone.utc),
         catchup=False,
@@ -44,4 +45,5 @@ def build_jobserve_dag(
         deduped = deduplicate_jobs(parsed, config)
         reported = report_counts(deduped)
         write_results(reported, config)
+        push_to_nosql(reported, config)
     return dag

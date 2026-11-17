@@ -52,6 +52,44 @@ Astro Runtime used by `astro dev start` has its own Python version. Run
 `astro dev start` in the container terminal. VS Code forwards the Airflow UI
 on port 8080 and Postgres on port 5432.
 
+Oracle NoSQL push
+=================
+
+The `jobserve_new_jobs` DAG ends with a `push_to_nosql` task that upserts each
+new hashed role into the `jobserve_seen` table. The row key is `uid` and the
+DAG's `hash` is stored as `content_hash`; the full job is stored in `document`.
+
+Requirements and credentials:
+
+- `oci>=2.150,<3` is declared in `requirements.txt` (rebuild the image after
+  changing it).
+- Credentials are resolved in this order: Airflow Connection `oci_nosql`,
+  environment variables (the gitignored `.env` file locally), then a standard
+  OCI config file if one is available in the Airflow environment. No Docker
+  Compose override or mounted key file is needed.
+- For local development, add the following to `.env`. The PEM private key can
+  be pasted with real newlines or with literal `\n` characters:
+
+  ```dotenv
+  OCI_USER=ocid1.user.oc1..xxxxxxxx
+  OCI_FINGERPRINT=xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx
+  OCI_TENANCY=ocid1.tenancy.oc1..xxxxxxxx
+  OCI_REGION=us-phoenix-1
+  OCI_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----
+  OCI_NOSQL_COMPARTMENT_ID=ocid1.tenancy.oc1..xxxxxxxx
+  OCI_NOSQL_TABLE=jobserve_seen
+  ```
+
+- Alternatively, create an Airflow Connection with id `oci_nosql`. Put these
+  keys in its extra JSON: `user`, `fingerprint`, `tenancy`, `region`,
+  `key_content`, `pass_phrase`, `compartment_id`, and `table_name`. The
+  connection's `login` and `password` are also accepted as fallbacks for
+  `user` and `key_content`. Airflow Assets are for data lineage/scheduling;
+  use a Connection or `.env` for credentials.
+- `OCI_NOSQL_CONNECTION_ID` can point to a different connection id.
+  `OCI_USE_INSTANCE_PRINCIPAL=true` or `OCI_USE_RESOURCE_PRINCIPAL=true` can be
+  used instead of an API key where the runtime provides that identity.
+
 Deploy Your Project to Astronomer
 =================================
 
