@@ -170,13 +170,18 @@ def parse_job(html: str, code: str) -> dict:
     return job
 
 
-def parse_listing_meta(html: str, code: str) -> dict:
-    """Fallback when a detail page cannot be fetched: fields from the search row."""
+def listing_title(html: str, code: str) -> str:
+    """Extract the search-row title for a code, or an empty string."""
     match = re.search(
         r"/gb/en/" + re.escape(code) + r'\.jsjob"[^>]*title="[^"]*? ([^"]+?)\s+job"',
         html, re.I,
     )
-    title = (match.group(1).strip() if match else "") or code
+    return match.group(1).strip() if match else ""
+
+
+def fallback_job(code: str, title: str = "") -> dict:
+    """Build the fallback record used when a detail page cannot be fetched."""
+    title = (title or "").strip() or code
     job = {
         "slug": slugify(title, code),
         "code": code,
@@ -202,3 +207,8 @@ def parse_listing_meta(html: str, code: str) -> dict:
     job["uid"] = uid_of(job)
     job["jd_text"] = build_jd_text(job)
     return job
+
+
+def parse_listing_meta(html: str, code: str) -> dict:
+    """Fallback when a detail page cannot be fetched: fields from the search row."""
+    return fallback_job(code, listing_title(html, code))

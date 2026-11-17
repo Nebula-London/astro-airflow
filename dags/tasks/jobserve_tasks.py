@@ -58,11 +58,10 @@ def deduplicate_jobs(parsed: dict, config: dict) -> dict:
 
 
 @task
-def report_counts(result: dict) -> dict:
+def report_counts(result: dict) -> None:
     """Log the counts table first, as soon as de-duplication is done."""
     for line in counts_table(result["stats"], result["tracker_size"], result["dedupe"]).splitlines():
         _LOGGER.info("%s", line)
-    return result
 
 
 @task

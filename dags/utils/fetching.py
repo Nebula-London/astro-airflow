@@ -10,13 +10,13 @@ from functools import partial
 from dags.utils.constants import BASE, COUNT_COLS
 from dags.utils.html import find_job_codes
 from dags.utils.http import fetch
-from dags.utils.job_parser import parse_job, parse_listing_meta
+from dags.utils.job_parser import fallback_job, listing_title, parse_job
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def fetch_search(url: str, config: dict) -> tuple[list[str], str]:
-    """Fetch a listing and every results page, returning codes and page HTML."""
+def fetch_search(url: str, config: dict) -> tuple[list[str], dict[str, str]]:
+    """Fetch a listing and every results page, returning codes and fallback titles."""
     html, final_url = fetch(url, config["timeout_seconds"], config["http_retries"])
     codes = find_job_codes(html, final_url, url)
     pages = sorted({int(number) for number in re.findall(r"[?&;]page=(\d+)", html)})
@@ -48,7 +48,8 @@ def fetch_search(url: str, config: dict) -> tuple[list[str], str]:
         _LOGGER.warning("A saved search returned no roles (empty results or an invalid URL)")
     else:
         _LOGGER.info("Listing returned %d role(s)", len(codes))
-    return codes, html
+    fallback_titles = {code: listing_title(html, code) for code in codes}
+    return codes, fallback_titles
 
 
 def fetch_searches(config: dict, urls: dict[str, str]) -> dict:
@@ -56,14 +57,16 @@ def fetch_searches(config: dict, urls: dict[str, str]) -> dict:
     searches = []
     for search in config["searches"]:
         name = search["name"]
-        codes, html = fetch_search(urls[name], config)
-        searches.append({"name": name, "codes": codes, "html": html})
+        codes, fallback_titles = fetch_search(urls[name], config)
+        searches.append(
+            {"name": name, "codes": codes, "fallback_titles": fallback_titles}
+        )
         _LOGGER.info("Search '%s': %d listing row(s)", name, len(codes))
     return {"searches": searches}
 
 
-def fetch_job_detail(code: str, listing_html: str, config: dict) -> dict:
-    """Fetch one detail page, falling back to the listing row on failure."""
+def fetch_job_detail(code: str, fallback_titles: dict[str, str], config: dict) -> dict:
+    """Fetch one detail page, falling back to the listing title on failure."""
     for attempt in range(config["http_retries"]):
         try:
             html, _ = fetch(
@@ -73,7 +76,7 @@ def fetch_job_detail(code: str, listing_html: str, config: dict) -> dict:
         except Exception:  # noqa: BLE001 - fall back to the listing row
             if attempt < config["http_retries"] - 1:
                 time.sleep(1.5 ** attempt)
-    return parse_listing_meta(listing_html, code)
+    return fallback_job(code, fallback_titles.get(code, ""))
 
 
 def parse_fetched_jobs(fetched: dict, config: dict) -> dict:
@@ -87,7 +90,9 @@ def parse_fetched_jobs(fetched: dict, config: dict) -> dict:
         counts = dict.fromkeys(COUNT_COLS, 0)
         counts["found"] = len(codes)
         detail_fetcher = partial(
-            fetch_job_detail, listing_html=search["html"], config=config,
+            fetch_job_detail,
+            fallback_titles=search.get("fallback_titles", {}),
+            config=config,
         )
         with ThreadPoolExecutor(max_workers=config["workers"]) as pool:
             found = list(pool.map(detail_fetcher, codes))

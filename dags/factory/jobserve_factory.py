@@ -43,7 +43,7 @@ def build_jobserve_dag(
         fetched = fetch_search_codes(config)
         parsed = parse_job_details(fetched, config)
         deduped = deduplicate_jobs(parsed, config)
-        reported = report_counts(deduped)
-        write_results(reported, config)
-        push_to_nosql(reported, config)
+        report_counts(deduped)
+        write_results(deduped, config)
+        push_to_nosql(deduped, config)
     return dag
