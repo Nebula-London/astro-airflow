@@ -41,11 +41,16 @@ You should also be able to access your Postgres Database at 'localhost:5432/post
 Develop in a Dev Container
 ==========================
 
-This project includes a VS Code Dev Container with the Astro CLI and Docker CLI.
+This project includes a VS Code Dev Container with the Astro CLI, OpenCode
+CLI, Docker CLI, Python 3.14, and the GitHub Copilot and Python extensions.
 Install and start Docker Desktop, then open this project in VS Code and choose
-"Reopen in Container" from the Command Palette. Once the container is ready,
-run `astro dev start` in its terminal. VS Code forwards the Airflow UI on port
-8080 and Postgres on port 5432.
+"Rebuild and Reopen in Container" from the Command Palette. Sign in to GitHub
+Copilot when prompted. Run `opencode` from the container terminal to use
+OpenCode on the mounted workspace; configure its model/provider credentials
+inside the container as needed. Python 3.14 is the editor interpreter; the
+Astro Runtime used by `astro dev start` has its own Python version. Run
+`astro dev start` in the container terminal. VS Code forwards the Airflow UI
+on port 8080 and Postgres on port 5432.
 
 Deploy Your Project to Astronomer
 =================================

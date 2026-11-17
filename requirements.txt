@@ -1,3 +1,2 @@
-# Astro Runtime includes the following pre-installed providers packages: https://docs.astronomer.io/astro/runtime-image-architecture#provider-packages
-apache-airflow-providers-amazon==8.0.0
-pydantic<2.0.0
+requests>=2.31,<3
+PyYAML>=6.0

@@ -1,0 +1,25 @@
+# Runtime settings for the jobserve_new_jobs DAG.
+#
+# IMPORTANT: search URLs contain a private JobServe `shid`. Never put a shid
+# here or in the repo. Store the searches as a JSON object of {name: URL} in
+# the Airflow Variable `jobserve_search_urls` (or the environment variable
+# JOBSERVE_SEARCH_URLS). Only the names below are read from this file.
+searches:
+  - name: "aws"
+  # - name: "Data engineer contracts"
+
+# All paths are optional; empty values resolve to the defaults shown.
+output_dir: ""        # <project>/include/jobserve
+state_file: ""        # <output_dir>/state.json
+tracker_file: ""      # <output_dir>/applications.csv
+jd_dir: ""            # <output_dir>/jds
+
+workers: 6            # parallel detail-page fetches
+delay_seconds: 0.0
+timeout_seconds: 30.0
+http_retries: 3
+limit: 0              # 0 = all listing rows (debug: e.g. 5)
+
+dedupe: true          # skip roles in state / prior extracts / tracker
+use_tracker: true     # append new roles to applications.csv
+status_style: ""      # "" = plain ("new"), "numbered" = "1-new"
