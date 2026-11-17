@@ -17,6 +17,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
+# Install the OCI CLI independently of Airflow's Python environment
+RUN curl -fsSL -o /tmp/install-oci.sh https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh && \
+    bash /tmp/install-oci.sh --accept-all-defaults --install-dir /opt/oci-cli --exec-dir /usr/local/bin --script-dir /usr/local/bin --no-tty && \
+    rm /tmp/install-oci.sh
+
 # Set Airflow environment and version variables
 ENV AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_VERSION=3.3.2
