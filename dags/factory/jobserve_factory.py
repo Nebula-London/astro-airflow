@@ -1,7 +1,8 @@
 """DAG factory for the full ``jobserve-new-jobs`` find-jobs pipeline.
 
-The task callables live in ``dags/tasks/jobserve_tasks.py``; the final DAG
-file at ``dags/jobserve_dag.py`` only calls :func:`build_jobserve_dag`.
+The task callables live in ``dags/tasks/jobserve_tasks.py`` and delegate to
+helpers in ``dags/utils`` / ``dags.connections``; the final DAG file at
+``dags/jobserve_dag.py`` only calls :func:`build_jobserve_dag`.
 """
 from datetime import datetime, timedelta, timezone
 from pathlib import Path

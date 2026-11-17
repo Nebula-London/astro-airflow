@@ -1,8 +1,9 @@
 """Final DAG for the jobserve-new-jobs pipeline.
 
-All logic lives in ``dags/tasks/jobserve_tasks.py`` and the wiring lives in
-``dags/factory/jobserve_factory.py``; this file only builds and exposes the
-DAG object that Airflow discovers.
+The task callables live in ``dags/tasks/jobserve_tasks.py`` and the logic they
+delegate to lives in ``dags/utils`` / ``dags/connections``; the wiring lives in
+``dags/factory/jobserve_factory.py``. This file only builds and exposes the DAG
+object that Airflow discovers.
 """
 from pathlib import Path
 
