@@ -1,0 +1,7 @@
+{"_note": "First public release year. batch_triage --answer warns when a credited role ended before this year.",
+ "GitHub Actions": 2019, "GitLab CI": 2012, "ArgoCD": 2018, "Kubernetes": 2014, "GKE": 2015, "EKS": 2018, "AKS": 2018,
+ "Docker": 2013, "Terraform": 2014, "TypeScript": 2012, "Node.js": 2009, "React": 2013, "Angular": 2016, "AngularJS": 2010,
+ "Snowflake": 2014, "dbt": 2016, "Airflow": 2015, "Databricks": 2013, "Spark": 2014, "PySpark": 2014, "Kafka": 2011,
+ "Pub/Sub": 2015, "BigQuery": 2011, "Power BI": 2015, "Tableau": 2004, "ThoughtSpot": 2014, "OpenSearch": 2021,
+ "Elasticsearch": 2010, "MongoDB": 2009, "GenAI": 2022, "LLMs": 2020, "RAG": 2020, "LangChain": 2022, "LangGraph": 2024,
+ "MCP": 2024, "Mistral": 2023, "GPT-4": 2023, "MLOps": 2018, "GDPR": 2018}

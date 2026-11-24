@@ -1,0 +1,20 @@
+# Extra JD terms for batch_triage.py (one per line; multi-word phrases allowed; '#' = comment).
+# Add terms the triage missed (it reports gaps only for terms it recognises).
+Secure by Design
+Digital Twin
+Digital Thread
+Sparx EA
+NATO Architecture Framework
+Azure Stack Hub
+Express.js
+Playwright
+Jest
+Kibana
+MUI
+landing zone
+VPC Service Controls
+Private Service Connect
+Shared VPC
+policy as code
+real-world evidence
+kdb+

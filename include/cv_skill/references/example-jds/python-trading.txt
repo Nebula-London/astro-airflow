@@ -1,0 +1,25 @@
+Senior Python Developer - Trading Technology (EXAMPLE JOB DESCRIPTION, fictional)
+Example Commodities Ltd - London, UK (hybrid, 3 days in office)
+Contract: 6 months, £600-650 per day, Inside IR35
+
+About the role
+We are looking for a hands-on Senior Python Developer to join the trading technology team supporting our
+gas and power desks. You will build and run server-side Python services that capture trades, publish
+positions and feed risk systems.
+
+Essential skills
+- 5+ years' commercial Python, ideally in Front Office or trading environments
+- Building REST APIs (FastAPI or Flask) and event-driven services with Kafka
+- AWS (ECS, Lambda, S3, RDS) and infrastructure as code with Terraform
+- PostgreSQL and SQL
+- CI/CD pipelines (GitHub Actions or Jenkins), Docker
+- Test-driven development and clean, object-oriented design
+- Working closely with traders and risk in an Agile team
+
+Desirable
+- Energy or commodities trading domain knowledge
+- pandas / NumPy for analytics
+- Kubernetes
+
+Security
+- Candidates must hold or be eligible for SC clearance.

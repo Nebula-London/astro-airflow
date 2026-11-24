@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Run a skill script with the skills' Python (3.14+, resolved by local_env.sh; never the system's old python3).
+# Shared by jobserve-new-jobs and targeted-cv-from-master (keep both copies identical). Run it from your job-search
+# folder (or set JOB_SEARCH_HOME): nothing is written outside that folder.
+#   bash <skill-dir>/scripts/py <script.py> [args]     a script in this folder (or any path)
+#   bash <skill-dir>/scripts/py -V | -c CODE | -m MOD  the interpreter itself
+#   bash <skill-dir>/scripts/py --which                 print the interpreter and the job-search folder
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+case "${1:-}" in ""|-h|--help) sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+# shellcheck source=local_env.sh
+source "$here/local_env.sh" || exit 1
+case "$1" in
+  --which) echo "JS_PY=$JS_PY ($("$JS_PY" -V 2>&1))"; echo "JOB_SEARCH_HOME=$JS_HOME" ;;
+  -*) exec "$JS_PY" "$@" ;;
+  *) s="$1"; shift; [ -f "$here/$s" ] && s="$here/$s"; exec "$JS_PY" "$s" "$@" ;;
+esac

@@ -1,0 +1,7 @@
+# CV renderer / checker libraries (Python 3.14; minimum 3.12). Latest releases as of 2026-10; the upper bounds keep a
+# future major version from changing PDF output without a test run first. The cv launcher reinstalls when this
+# file changes.
+reportlab>=5.1,<6
+pypdf>=6.21,<7
+# optional: layout checks and page images in check_pdf.py (pdftoppm can supply images); needs Python 3.11+
+pymupdf>=2.0,<3

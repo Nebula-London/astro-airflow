@@ -1,0 +1,22 @@
+Backend Engineer - Payments APIs (EXAMPLE JOB DESCRIPTION, fictional)
+Example Payments plc - Manchester, UK (remote-first)
+Permanent: £85,000 - £95,000 + bonus
+
+What you will do
+Design and run the APIs behind our card and open banking payments, serving millions of requests a day.
+
+You will need
+- Commercial experience in Python or Go building REST APIs
+- Kubernetes and Docker in production
+- Microsoft Azure (AKS, Service Bus, Cosmos DB) or AWS equivalents
+- PostgreSQL and data modelling
+- Event-driven design with Kafka
+- Observability: Prometheus, Grafana, OpenTelemetry
+- Test-driven development and CI/CD
+
+Nice to have
+- Payments or fintech experience
+- PCI DSS awareness
+- Mentoring other engineers
+
+BPSS checks apply to all hires.

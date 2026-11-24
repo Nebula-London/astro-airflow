@@ -4,5 +4,6 @@ airflow_settings.yaml
 __pycache__/
 include/data/
 include/jobserve/
+include/cv/
 astro
 dags.*

@@ -6,7 +6,11 @@
 # JOBSERVE_SEARCH_URLS). Only the names below are read from this file.
 searches:
   - name: "aws"
-  # - name: "Data engineer contracts"
+  - name: "data engineer"
+  - name: "cloud"
+  # - name: "platform engineer"
+  - name: "ai"
+  - name: "infrastructre"
 
 # All paths are optional; empty values resolve to the defaults shown.
 output_dir: ""        # <project>/include/jobserve

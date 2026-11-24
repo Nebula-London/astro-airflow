@@ -1,0 +1,29 @@
+# Runtime settings for the cv_master_jd_match DAG.
+#
+# Scope: read JDs from Oracle NoSQL, match them against master.json using the
+# vendored targeted-cv-from-master matcher, and report match percentages.
+# No PDF or CV generation happens in this DAG.
+#
+# master.json is personal data. Keep it outside git; include/cv is ignored.
+master_file: "include/cv/raj-gondalia-v8.json"
+output_dir: "include/cv"
+source_dir: "include/cv/source"
+run_root: "include/cv/runs"
+job_search_home: "include/cv/home"
+tracker_file: "include/jobserve/applications.csv"
+
+# Leave empty to match with no remembered answers. Point to an answers.json
+# from the CV skill to include confirmed terms in the score.
+answers_file: ""
+
+# Vendored copy of targeted-cv-from-master (scripts + references).
+skill_dir: "include/cv_skill"
+
+oracle_nosql:
+  table: "jobserve_seen"
+  document_field: "document"
+  page_size: 500
+  max_rows: 0        # 0 = all rows
+  consistency: "EVENTUAL"
+
+report_top_n: 20     # rows in summary.md / logs; full data stays in triage.json

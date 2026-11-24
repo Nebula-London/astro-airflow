@@ -1,0 +1,16 @@
+dist/
+__pycache__/
+.cortex/
+.DS_Store
+# member data never belongs in the skill repo: masters, answers, CVs and trackers are personal
+*-v[0-9]*.json
+answers.json
+memory.json
+workspace.json
+cv-out/
+cv/
+jds*/
+applications*.csv
+*.pending.csv
+*_jd-extracted-from-jobserve.json
+*.pdf

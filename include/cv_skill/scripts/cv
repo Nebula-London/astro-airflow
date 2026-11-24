@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Agent-agnostic launcher: works when every command runs in a fresh shell (Claude.ai, OpenCode, Claude Code,
+# Cortex Code). Nothing needs to be sourced or exported first. Run it from your job-search folder (or set
+# JOB_SEARCH_HOME): nothing is written outside that folder.
+#   bash <skill-dir>/scripts/cv <cv.py command> [args]     e.g.  bash .../scripts/cv triage
+#   bash <skill-dir>/scripts/cv run <script.py> [args]     e.g.  bash .../scripts/cv run digest_master.py M.json --keywords ...
+#   bash <skill-dir>/scripts/cv env                         prints the interpreter, scripts and job-search folders
+# Runs on Python 3.14 (see local_env.sh). The venv interpreter and a checksum of requirements.txt are remembered in
+# <job-search>/.jobsearch/cv-py: a changed requirements.txt, or a venv on another Python than local_env.sh picks
+# (e.g. after brew install python@3.14), is brought up to date on the next call.
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=local_env.sh
+source "$here/local_env.sh" || exit 1
+cache="$JS_LOCAL/cv-py"; stamp="$(cksum < "$here/requirements.txt" | tr -s ' ' '-')"
+py=""; old=""
+[ -f "$cache" ] && { py="$(sed -n 1p "$cache")"; old="$(sed -n 2p "$cache")"; }
+if [ -z "$py" ] || [ "$old" != "$stamp" ] || [ "$(_js_ver "$py")" != "$(_js_ver "$JS_PY")" ] ||
+   ! "$py" -c 'import sys, reportlab, pypdf; assert sys.version_info >= (3, 12)' 2>/dev/null; then
+  _args=("$@"); set --                         # setup_env.sh takes [venv_dir]: do not pass our arguments
+  # shellcheck disable=SC1091
+  source "$here/setup_env.sh" >/dev/null || exit 1
+  set -- "${_args[@]}"
+  py="$CV_PY"; [ -d "$JS_LOCAL" ] && printf '%s\n%s\n' "$py" "$stamp" > "$cache" 2>/dev/null
+fi
+case "${1:-}" in
+  env) echo "CV_PY=$py ($("$py" -V 2>&1))"; echo "CV_SCRIPTS=$here"; echo "JOB_SEARCH_HOME=$JS_HOME" ;;
+  run) shift; s="$1"; shift; exec "$py" "$here/$s" "$@" ;;
+  *)   exec "$py" "$here/cv.py" "$@" ;;
+esac

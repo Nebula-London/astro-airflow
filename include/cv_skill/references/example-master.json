@@ -1,0 +1,417 @@
+{
+  "_readme": "EXAMPLE master resume for a fictional person (Alex Morgan). Copy it to <first>-<last>-v1.json in YOUR job-search folder and replace every value with your own facts, or ask your agent to build it from your existing CV. Leave a value empty (\"\" or []) when it does not apply; never invent. Dates: YYYY-MM-DD (or YYYY-MM); end_date \"\" = current role. client = who the work was for (shown on the CV); organisation = who employed or paid you (contracting entity). Check it with: cv check-master <file>. Keep your master private: never commit or share it.",
+  "schema": {
+    "name": "member_master_profile",
+    "version": "2.1.0"
+  },
+  "member": {
+    "first_name": "Alex",
+    "middle_name": "",
+    "last_name": "Morgan",
+    "preferred_name": "Alex",
+    "contact": {
+      "email": "alex.morgan@example.com",
+      "phone": "+44 7700 900123",
+      "website": "https://example.com"
+    },
+    "location": {
+      "city": "London",
+      "region": "Greater London",
+      "country": "United Kingdom",
+      "postal_code": ""
+    },
+    "profiles": {
+      "linkedin": "https://www.linkedin.com/in/example",
+      "github": "",
+      "portfolio": "",
+      "calendar": "https://calendar.app.google/example",
+      "other": [],
+      "profile_photo": ""
+    },
+    "member_id": "example-0001"
+  },
+  "professional_profile": {
+    "professional_identity": [
+      "Python Developer",
+      "Backend Engineer"
+    ],
+    "professional_domains": [
+      "Front Office trading",
+      "Financial services"
+    ],
+    "areas_of_expertise": [
+      "Server-side Python services",
+      "REST API design",
+      "Event streaming",
+      "AWS cloud delivery"
+    ],
+    "industries": [
+      "Energy trading",
+      "Investment banking",
+      "Fintech",
+      "Retail"
+    ]
+  },
+  "career_history": [
+    {
+      "role_title": "Senior Python Developer",
+      "client": "Example Energy Trading",
+      "start_date": "2024-03-01",
+      "end_date": "",
+      "organisation": "Morgan Software Consulting Ltd",
+      "employment_type": "Contract",
+      "location": "London, UK (hybrid)",
+      "responsibilities": [
+        "Build server-side Python services and REST APIs for the gas and power trading desk, deployed on AWS ECS.",
+        "Deliver CI/CD pipelines in GitHub Actions and Terraform infrastructure with the platform and security teams.",
+        "Design the trade capture API in FastAPI, validating about 8,000 trades a day against reference data in PostgreSQL.",
+        "Publish position updates to Kafka topics consumed by the risk and settlement systems.",
+        "Write pytest suites with test-driven development, keeping line coverage above 85% on every service.",
+        "Run fortnightly demos with traders and the risk team to agree priorities and acceptance criteria.",
+        "Mentor two developers on code review, testing and AWS deployment practice."
+      ],
+      "achievements": [
+        "Cut end-of-day position report run time from 40 minutes to 6 minutes by moving it to an event-driven Lambda and S3 pipeline.",
+        "Reduced failed deployments from about one a week to one a quarter by adding automated integration tests to the pipeline."
+      ],
+      "deliverables": [
+        "Trade capture API",
+        "Position reporting service"
+      ],
+      "skills_used": [
+        "API design",
+        "Agile",
+        "Stakeholder engagement"
+      ],
+      "technologies_used": [
+        "Python",
+        "FastAPI",
+        "AWS ECS",
+        "AWS Lambda",
+        "S3",
+        "RDS",
+        "PostgreSQL",
+        "Docker",
+        "Terraform",
+        "GitHub Actions",
+        "Kafka",
+        "pytest",
+        "Kubernetes"
+      ],
+      "team": {
+        "size": 7,
+        "leadership": false,
+        "direct_reports": null
+      },
+      "stakeholders": [
+        "Traders",
+        "Risk"
+      ],
+      "organisation_website": "",
+      "client_website": "https://example.com"
+    },
+    {
+      "role_title": "Python Contractor",
+      "client": "Example Fintech",
+      "start_date": "2022-06-01",
+      "end_date": "2022-12-31",
+      "organisation": "Morgan Software Consulting Ltd",
+      "employment_type": "Contract (part-time, concurrent engagement)",
+      "location": "Remote, UK",
+      "responsibilities": [
+        "Built a FastAPI service and MongoDB data model for trade reconciliation, two days a week alongside the Example Bank role.",
+        "Containerised the service with Docker and deployed it to AWS ECS with a GitHub Actions pipeline.",
+        "Wrote matching rules in pandas for breaks between broker and internal trade records."
+      ],
+      "achievements": [
+        "Reconciled about 50,000 trades a day, replacing a manual spreadsheet check."
+      ],
+      "deliverables": [],
+      "skills_used": [
+        "Data modelling"
+      ],
+      "technologies_used": [
+        "Python",
+        "FastAPI",
+        "MongoDB",
+        "Docker",
+        "pandas",
+        "AWS ECS",
+        "GitHub Actions"
+      ],
+      "team": {
+        "size": 3,
+        "leadership": false,
+        "direct_reports": null
+      },
+      "stakeholders": [],
+      "organisation_website": "",
+      "client_website": ""
+    },
+    {
+      "role_title": "Python Developer",
+      "client": "Example Bank",
+      "start_date": "2021-01-04",
+      "end_date": "2024-02-29",
+      "organisation": "Example Bank",
+      "employment_type": "Full-time",
+      "location": "London, UK",
+      "responsibilities": [
+        "Developed a real-time P&L service for the fixed income desk in Python, consuming Kafka trade events.",
+        "Designed REST APIs used by the risk and finance teams.",
+        "Worked in an Agile Front Office team of 9, with fortnightly releases.",
+        "Built pandas and NumPy analytics for intraday risk sensitivities on about 12,000 bond positions.",
+        "Added a GraphQL layer so desk tools could query positions and P&L in one call.",
+        "Moved the team's builds from manual scripts to Jenkins pipelines with unit and integration tests.",
+        "Tuned SQL Server queries behind the end-of-day reports, cutting their run time from 25 to 8 minutes.",
+        "Supported traders directly during market hours as second-line support for the desk applications."
+      ],
+      "achievements": [
+        "P&L available intraday instead of next morning for 30 traders."
+      ],
+      "deliverables": [
+        "Real-time P&L service"
+      ],
+      "skills_used": [
+        "Test-driven development",
+        "Object-oriented design",
+        "Agile"
+      ],
+      "technologies_used": [
+        "Python",
+        "pandas",
+        "NumPy",
+        "Kafka",
+        "SQL Server",
+        "GraphQL",
+        "Jenkins"
+      ],
+      "team": {
+        "size": 9,
+        "leadership": false,
+        "direct_reports": null
+      },
+      "stakeholders": [
+        "Fixed income traders",
+        "Risk",
+        "Finance"
+      ],
+      "organisation_website": "https://example.com",
+      "client_website": ""
+    },
+    {
+      "role_title": "Developer",
+      "client": "Example Retailer",
+      "start_date": "2019-01-07",
+      "end_date": "2020-12-18",
+      "organisation": "Example Retailer",
+      "employment_type": "Full-time",
+      "location": "Leeds, UK",
+      "responsibilities": [
+        "Built Python batch jobs and a Django admin site for stock and pricing data.",
+        "Loaded nightly price files for about 40,000 products into PostgreSQL and flagged anomalies for the pricing team.",
+        "Wrote REST endpoints consumed by the store replenishment system.",
+        "Introduced unit tests and code review to a team that had neither."
+      ],
+      "achievements": [],
+      "deliverables": [],
+      "skills_used": [],
+      "technologies_used": [
+        "Python",
+        "Django",
+        "PostgreSQL"
+      ],
+      "team": {
+        "size": 5,
+        "leadership": false,
+        "direct_reports": null
+      },
+      "stakeholders": [],
+      "organisation_website": "",
+      "client_website": ""
+    },
+    {
+      "role_title": "Junior Developer",
+      "client": "Example Consultancy",
+      "start_date": "2017-01-09",
+      "end_date": "2018-12-21",
+      "organisation": "Example Consultancy",
+      "employment_type": "Full-time",
+      "location": "Leeds, UK",
+      "responsibilities": [
+        "Wrote Python scripts and SQL reports for client data migrations.",
+        "Migrated customer records for three clients from legacy Access databases to SQL Server.",
+        "Documented migration runbooks and supported go-live weekends."
+      ],
+      "achievements": [],
+      "deliverables": [],
+      "skills_used": [],
+      "technologies_used": [
+        "Python",
+        "SQL"
+      ],
+      "team": {
+        "size": 12,
+        "leadership": false,
+        "direct_reports": null
+      },
+      "stakeholders": [],
+      "organisation_website": "",
+      "client_website": ""
+    }
+  ],
+  "projects": [],
+  "skills": [
+    {
+      "name": "Python",
+      "category": "Technical",
+      "subcategory": "Language"
+    },
+    {
+      "name": "SQL",
+      "category": "Technical",
+      "subcategory": "Language"
+    },
+    {
+      "name": "FastAPI",
+      "category": "Technical",
+      "subcategory": "Framework"
+    },
+    {
+      "name": "Django",
+      "category": "Technical",
+      "subcategory": "Framework"
+    },
+    {
+      "name": "pandas",
+      "category": "Technical",
+      "subcategory": "Library"
+    },
+    {
+      "name": "NumPy",
+      "category": "Technical",
+      "subcategory": "Library"
+    },
+    {
+      "name": "Kafka",
+      "category": "Technical",
+      "subcategory": "Streaming"
+    },
+    {
+      "name": "AWS",
+      "category": "Technical",
+      "subcategory": "Cloud"
+    },
+    {
+      "name": "Terraform",
+      "category": "Technical",
+      "subcategory": "Infrastructure as code"
+    },
+    {
+      "name": "Docker",
+      "category": "Technical",
+      "subcategory": "Containers"
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "Technical",
+      "subcategory": "Database"
+    },
+    {
+      "name": "MongoDB",
+      "category": "Technical",
+      "subcategory": "Database"
+    },
+    {
+      "name": "GitHub Actions",
+      "category": "Technical",
+      "subcategory": "CI/CD"
+    },
+    {
+      "name": "Agile",
+      "category": "Professional",
+      "subcategory": "Delivery"
+    },
+    {
+      "name": "Front Office trading",
+      "category": "Domain",
+      "subcategory": "Finance"
+    }
+  ],
+  "education": [
+    {
+      "institution": "Example University",
+      "qualification": "BSc",
+      "field_of_study": "Computer Science",
+      "grade": "2:1",
+      "start_date": "2013-09-01",
+      "end_date": "2016-06-30",
+      "location": "Leeds, UK",
+      "institution_url": "https://example.com"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "AWS Certified Developer - Associate",
+      "issuer": "Amazon Web Services",
+      "type": "Professional Certification",
+      "issue_date": "2023-05-12",
+      "expiry_date": "2026-05-12",
+      "credential_id": "",
+      "credential_url": "https://aws.amazon.com/certification/"
+    }
+  ],
+  "training": [],
+  "languages": [
+    {
+      "language": "English",
+      "proficiency": "Native"
+    }
+  ],
+  "achievements": [
+    {
+      "title": "Internal hackathon winner",
+      "description": "Built a prototype trade-query chatbot over the positions API in two days.",
+      "organisation": "Example Energy Trading",
+      "date": "2025-06-20",
+      "impact": "Adopted as a pilot by the risk team.",
+      "skills_demonstrated": [
+        "Python",
+        "FastAPI"
+      ]
+    }
+  ],
+  "publications": [],
+  "patents": [],
+  "awards": [],
+  "volunteering": [],
+  "professional_memberships": [],
+  "work_authorisation": {
+    "countries": [
+      "United Kingdom"
+    ],
+    "status": "British citizen",
+    "requires_sponsorship": false,
+    "verified": false
+  },
+  "security_clearances": [
+    {
+      "country": "United Kingdom",
+      "level": "Security Check",
+      "level_code": "SC",
+      "granted_date": "2024-04-15",
+      "expiry_date": "2029-04-15",
+      "sponsor": "Example Agency",
+      "vetting_authority": "UKSV",
+      "verified": false
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "cv-2026-10",
+      "type": "CV",
+      "name": "Alex Morgan CV.pdf",
+      "date_added": "2026-10-19"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+Python Data Engineer - Market Data Platform (EXAMPLE JOB DESCRIPTION, fictional)
+Example Asset Management - London, UK (hybrid)
+Contract: 9 months, £550 per day, Outside IR35
+
+The role
+Join our data platform team building batch and streaming pipelines for market and reference data used by
+portfolio managers and risk.
+
+Essential
+- Strong Python and SQL, including pandas
+- Apache Spark (PySpark) for large batch transformations
+- Apache Airflow for orchestration
+- Kafka or similar event streaming
+- AWS (S3, Lambda, Glue) and Terraform
+- Snowflake or another cloud data warehouse
+- CI/CD with GitHub Actions; Docker
+- Data quality testing and documentation
+
+Desirable
+- dbt
+- Financial markets data (prices, positions, reference data)
+- Agile delivery with business stakeholders
+
+No security clearance required.

@@ -95,8 +95,11 @@ def make_client(config: dict, signer: Any | None) -> Any:
     return oci.nosql.NosqlClient(config, signer=signer)
 
 
-def connection_settings() -> tuple[Any, str, str]:
-    """Return ``(client, table_name, compartment_id)`` for the NoSQL table."""
+def connection_settings(table_name: str | None = None) -> tuple[Any, str, str]:
+    """Return ``(client, table_name, compartment_id)`` for the NoSQL table.
+
+    ``table_name`` overrides the Airflow Connection and environment defaults.
+    """
     import oci
 
     conn_id = os.environ.get(CONNECTION_ID_ENV, "").strip() or DEFAULT_CONNECTION_ID
@@ -137,7 +140,7 @@ def connection_settings() -> tuple[Any, str, str]:
     compartment = str(
         env_compartment or conn_extra.get("compartment_id") or config.get("tenancy") or ""
     )
-    table = str(env_table or conn_extra.get("table_name") or DEFAULT_TABLE)
+    table = str(table_name or env_table or conn_extra.get("table_name") or DEFAULT_TABLE)
     if not compartment:
         raise ValueError(f"Set '{COMPARTMENT_ENV}' to the compartment that owns '{table}'")
     return make_client(config, signer), table, compartment

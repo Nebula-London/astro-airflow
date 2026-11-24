@@ -1,0 +1,120 @@
+{
+ "name": "Alex Morgan",
+ "headline": "Senior Python Developer | Cloud-Native Trading Platforms (AWS)",
+ "contact": {
+  "location": "London, UK",
+  "email": "alex.morgan@example.com",
+  "phone": "+44 7700 900123",
+  "linkedin": "https://www.linkedin.com/in/example",
+  "website": "https://example.com",
+  "calendar": "https://calendar.app.google/example"
+ },
+ "meta": {
+  "title": "Alex Morgan - CV - Python Developer (Energy Trading)",
+  "author": "Alex Morgan"
+ },
+ "sections": [
+  {
+   "heading": "Profile",
+   "items": [
+    {
+     "type": "paragraph",
+     "text": "Hands-on Python developer with 9 years' commercial Python delivery in Front Office trading environments. Built server-side Python services and REST APIs for a <b>gas and power</b> trading desk, and a real-time P&L service for a fixed income desk. Currently delivering cloud-native services on AWS (ECS, Lambda, S3) with Terraform and CI/CD in Agile teams. Right to work in the UK."
+    }
+   ]
+  },
+  {
+   "heading": "Core Capabilities",
+   "items": [
+    {
+     "type": "labelled",
+     "label": "Python engineering",
+     "text": "Python, pandas, NumPy, FastAPI; object-oriented design; test-driven development"
+    },
+    {
+     "type": "labelled",
+     "label": "APIs & integration",
+     "text": "REST APIs (design and consumption), GraphQL, Kafka"
+    },
+    {
+     "type": "labelled",
+     "label": "Cloud",
+     "text": "AWS ECS, Lambda, S3, RDS; Docker; Terraform"
+    },
+    {
+     "type": "labelled",
+     "label": "Data",
+     "text": "PostgreSQL, SQL Server, MongoDB"
+    },
+    {
+     "type": "labelled",
+     "label": "Delivery",
+     "text": "CI/CD (GitHub Actions), Agile, technical design, stakeholder engagement"
+    }
+   ]
+  },
+  {
+   "heading": "Professional Experience",
+   "items": [
+    {
+     "type": "role",
+     "ref": 0,
+     "title": "Senior Python Developer",
+     "company": "Example Energy Trading",
+     "company_url": "https://example.com",
+     "right": "Mar 2024 - Present",
+     "bullets": [
+      "Build server-side Python services and REST APIs for the gas and power trading desk on AWS ECS.",
+      "Deliver CI/CD pipelines and Terraform infrastructure with platform and security teams."
+     ]
+    },
+    {
+     "type": "role",
+     "ref": 1,
+     "title": "Python Developer",
+     "company": "Example Bank",
+     "right": "Jan 2021 - Feb 2024",
+     "bullets": [
+      "Developed a real-time P&L service for the fixed income desk in Python, consuming Kafka trade events.",
+      "Designed REST APIs used by risk and finance teams; worked in an Agile Front Office team."
+     ]
+    },
+    {
+     "type": "subheading",
+     "text": "Other engagements",
+     "space_before": 6
+    },
+    {
+     "type": "role",
+     "ref": 2,
+     "title": "Python Contractor",
+     "company": "Example Fintech",
+     "right": "Jun 2022 - Dec 2022",
+     "bullets": [
+      "Part-time: built a FastAPI service and MongoDB data model for trade reconciliation."
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "Also: Example Retailer (2019-20), Example Consultancy (2017-19).",
+     "space_before": 3
+    }
+   ]
+  },
+  {
+   "heading": "Education & Certifications",
+   "items": [
+    {
+     "type": "role",
+     "title": "BSc Computer Science",
+     "company": "Example University",
+     "right": "2013 - 2016"
+    },
+    {
+     "type": "paragraph",
+     "text": "<a href=\"https://aws.amazon.com/certification/\">AWS Certified Developer - Associate</a>"
+    }
+   ]
+  }
+ ]
+}
