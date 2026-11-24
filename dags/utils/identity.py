@@ -7,6 +7,11 @@ still recognising the exact same posting if it reappears on one board.
 """
 from __future__ import annotations
 
+import hashlib
+
+NOSQL_KEY_BYTES = 64
+_HASH_PREFIX = "hash:"
+
 
 def source_key(portal: str, code: str) -> str:
     """Return a collision-free key for one portal's job code."""
@@ -18,6 +23,23 @@ def canonical_uid(job: dict) -> str:
     if job.get("uid") and str(job["uid"]).startswith("hash:"):
         return job["uid"]
     return "hash:" + str(job.get("canonical_hash") or job.get("hash") or "")
+
+
+def nosql_row_key(job: dict) -> str:
+    """Return a deterministic row key within Oracle NoSQL's 64-byte limit.
+
+    Canonical uids are ``hash:<64-char digest>`` (69 bytes). Dropping only the
+    ``hash:`` prefix keeps the full digest and therefore the same uniqueness.
+    Any other identity that is still too long is hashed so it also fits.
+    """
+    uid = canonical_uid(job)
+    digest = uid[len(_HASH_PREFIX):] if uid.startswith(_HASH_PREFIX) else ""
+    if digest and len(digest.encode("utf-8")) <= NOSQL_KEY_BYTES:
+        return digest
+    encoded = uid.encode("utf-8")
+    if len(encoded) <= NOSQL_KEY_BYTES:
+        return uid
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def job_keys(job: dict) -> set[str]:

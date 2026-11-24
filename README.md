@@ -56,9 +56,9 @@ Multi-portal job search
 =======================
 
 The `jobserve_new_jobs` DAG is now portal-agnostic. Roles are listed once in
-`dags/config/jobs_config.yaml`; one URL template per job site is stored in the
-Airflow Variable `job_search_urls`. Every role fans out to all enabled portals
-with a template, so `aws` is not repeated for each site.
+`dags/config/jobs_config.yaml`; each job site has its own Airflow Variable
+named `<portal>_search_urls` holding `{role: URL}` entries. Every role fans out
+to all enabled portals that have URLs, so `aws` is not repeated for each site.
 
 Config (`dags/config/jobs_config.yaml`):
 
@@ -77,37 +77,51 @@ portals:
   cw:        { enabled: true }
   indeed:    { enabled: false } # no verified public API/feed yet
   linkedin:  { enabled: false } # public search is JS-driven/anti-bot
+
+# Stagger mapped targets and jitter HTTP requests to avoid lockstep calls.
+portal_stagger_seconds: 30.0
+request_jitter_seconds: 2.0
 ```
 
-Airflow Variable `job_search_urls` (JSON object, one template per portal):
+Mapped targets are spread over `portal_stagger_seconds` and each request gets a
+random pause of up to `request_jitter_seconds`; retry backoff is jittered too.
+Raise these values if a site still rate-limits the shared IP.
 
-```json
-{
-  "jobserve": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=...",
-  "totaljobs": "https://www.totaljobs.com/jobs/{query}/in-manchester?radius=30",
-  "cw": "https://www.cwjobs.co.uk/jobs/{query}",
-  "indeed": "https://uk.indeed.com/jobs?q={query}"
-}
-```
+Airflow Variables, one per portal (each a JSON object of `{role: URL}`):
 
-- `{query}` is replaced at task runtime with the role from config. Path roles
-  are hyphenated (`data engineer` -> `data-engineer`); query roles are
-  plus-encoded.
-- The legacy `jobserve_search_urls` Variable / `JOBSERVE_SEARCH_URLS` env var
-  still work, but only search JobServe with a fixed saved URL. Migrate to the
-  new Variable to enable fan-out.
+- `jobserve_search_urls` (existing):
+  ```json
+  {"aws": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=...",
+   "data engineer": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=..."}
+  ```
+- `totaljobs_search_urls`:
+  ```json
+  {"aws": "https://www.totaljobs.com/jobs/aws",
+   "data engineer": "https://www.totaljobs.com/jobs/data-engineer"}
+  ```
+- `cw_search_urls`:
+  ```json
+  {"aws": "https://www.cwjobs.co.uk/jobs/aws"}
+  ```
+
+Each entry becomes a `portal::role` override used by that mapped task, so
+separate saved searches per role work on every site. A generic `portal` URL is
+synthesised from the first entry as a fallback. The older combined
+`job_search_urls` Variable (`{portal: URL template}`) is still accepted but is
+no longer needed.
+
 - A URL never enters config, DAG code, XCom or logs. The mapped tasks receive
   only `{"key": "totaljobs::aws", "portal": "totaljobs", "role": "aws"}`.
-- JobServe is intentionally a fixed saved search: its `shid` URL is stored
-  without `{query}` and used as-is for every role (its adapter declares no
-  query parameter). Totaljobs/CWJobs use `{query}` in the path. Indeed/LinkedIn
-  templates can be added later; verification is deferred.
+- A stored URL may be a fixed saved-search URL or include a `{query}`
+  placeholder. Path roles are hyphenated (`data engineer` ->
+  `data-engineer`); query roles are plus-encoded.
+- Indeed/LinkedIn Variables can be added later; verification is deferred.
 
 Portals with a working adapter: `jobserve`, `totaljobs`, `cw` (CWJobs reuses the
 Totaljobs adapter). `indeed` and `linkedin` are registered but disabled until
 their adapters are implemented and verified. Adding a portal means adding one
-entry to `ADAPTERS` in `dags/portals/registry.py`, one config entry and one URL
-template -- the DAG wiring does not change.
+entry to `ADAPTERS` in `dags/portals/registry.py`, one config entry and one
+`<portal>_search_urls` Variable -- the DAG wiring does not change.
 
 Each mapped `fetch_search_codes` / `parse_job_details` pair handles one
 `portal::role` target, so retries are isolated per site. The `deduplicate_jobs`
@@ -120,11 +134,13 @@ Oracle NoSQL push
 =================
 
 The `jobserve_new_jobs` DAG ends with a `push_to_nosql` task that upserts each
-new canonical role into the `jobserve_seen` table. The row key is the canonical
-`uid` (`hash:<canonical_hash>`), `hash` is stored as `content_hash`, and the
-full job -- including its `portal`, `search_role` and `sources` list -- is
-stored in `document`. Existing table columns are unchanged for compatibility;
-adding queryable portal columns would require a table schema change.
+new canonical role into the `jobserve_seen` table. The row key is the 64-character
+canonical hash digest (the `hash:` prefix is dropped because Oracle NoSQL limits
+primary keys to 64 bytes); the full `hash:<canonical_hash>` uid remains in
+`document` for de-duplication. `hash` is also stored as `content_hash`, and the
+full job -- including its `portal`, `search_role` and `sources` list -- is stored
+in `document`. Existing table columns are unchanged for compatibility; adding
+queryable portal columns would require a table schema change.
 
 Requirements and credentials:
 
@@ -156,6 +172,17 @@ Requirements and credentials:
 - `OCI_NOSQL_CONNECTION_ID` can point to a different connection id.
   `OCI_USE_INSTANCE_PRINCIPAL=true` or `OCI_USE_RESOURCE_PRINCIPAL=true` can be
   used instead of an API key where the runtime provides that identity.
+
+Oracle NoSQL reads (CV DAG)
+===========================
+
+`read_nosql_jds` pages through the same table. The table is provisioned for
+50 read units/sec (about 50 KB/sec), so `dags/config/cv_config.yaml` defaults to
+`page_size: 10` with `page_delay_seconds: 1.0` between pages. HTTP 429 /
+`TooManyRequests` responses are retried `retries` times with exponential
+backoff starting at `retry_delay_seconds`. The same retry settings also apply to
+`push_to_nosql` writes. Increase the table's throughput before raising the page
+size or reducing the delay.
 
 Deploy Your Project to Astronomer
 =================================

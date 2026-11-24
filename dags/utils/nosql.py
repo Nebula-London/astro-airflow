@@ -10,16 +10,23 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from datetime import date
+from functools import partial
 from typing import Any
 
 from dags.connections.nosql_connection import connection_settings
 from dags.utils.dedupe import load_state
-from dags.utils.identity import canonical_uid
+from dags.utils.identity import canonical_uid, nosql_row_key
+from dags.utils.oci_retry import call_with_retry
 from dags.utils.output import dated_name
 
 _LOGGER = logging.getLogger(__name__)
 _TABLE_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_DEFAULT_PAGE_SIZE = 10
+_DEFAULT_PAGE_DELAY_SECONDS = 1.0
+_DEFAULT_RETRIES = 5
+_DEFAULT_RETRY_DELAY_SECONDS = 1.0
 
 
 def state_first_seen(state: dict, uid: str) -> str:
@@ -29,12 +36,17 @@ def state_first_seen(state: dict, uid: str) -> str:
 
 
 def build_row(job: dict, first_seen: str, source_file: str) -> dict:
-    """Build one row matching the table schema, with the full job in JSON."""
+    """Build one row matching the table schema, with the full job in JSON.
+
+    The ``uid`` column is the NoSQL primary key, so it holds the hash digest
+    without the ``hash:`` prefix (69 bytes would exceed the 64-byte limit).
+    The full canonical uid remains in ``document`` for deduplication.
+    """
     document = dict(job)
     document.setdefault("canonical_hash", job.get("hash", ""))
     document.setdefault("sources", [])
     return {
-        "uid": canonical_uid(job),
+        "uid": nosql_row_key(job),
         "content_hash": job.get("hash", ""),
         "code": job.get("source_code") or job.get("code", ""),
         "slug": job.get("slug", ""),
@@ -55,12 +67,30 @@ def push_jobs(config: dict, jobs: list[dict]) -> int:
     client, table, compartment = connection_settings()
     state = load_state(config["state_file"])
     source_file = dated_name()
+    retries = max(1, int(config.get("nosql_retries", _DEFAULT_RETRIES)))
+    retry_delay = max(
+        0.0, float(config.get("nosql_retry_delay_seconds", _DEFAULT_RETRY_DELAY_SECONDS))
+    )
     for job in jobs:
+        uid = canonical_uid(job)
+        row = build_row(job, state_first_seen(state, uid), source_file)
+        _LOGGER.info(
+            "Upserting Oracle NoSQL table=%s key=%s canonical_uid=%s source=%s",
+            table,
+            row["uid"],
+            uid,
+            job.get("source_code") or job.get("code") or "",
+        )
         details = oci.nosql.models.UpdateRowDetails(
-            value=build_row(job, state_first_seen(state, canonical_uid(job)), source_file),
+            value=row,
             compartment_id=compartment,
         )
-        client.update_row(table_name_or_id=table, update_row_details=details)
+        call_with_retry(
+            partial(client.update_row, table_name_or_id=table, update_row_details=details),
+            retries=retries,
+            base_delay=retry_delay,
+            action="Oracle NoSQL update_row",
+        )
     _LOGGER.info("Pushed %d row(s) to Oracle NoSQL table %s", len(jobs), table)
     return len(jobs)
 
@@ -80,11 +110,23 @@ def query_rows(config: dict) -> list[dict]:
     table = validate_table_name(config["nosql_table"])
     client, client_table, compartment = connection_settings(table)
     statement = f"SELECT * FROM {table}"
-    page_size = max(1, int(config["nosql_page_size"]))
+    page_size = max(1, int(config.get("nosql_page_size", _DEFAULT_PAGE_SIZE)))
+    page_delay = max(
+        0.0, float(config.get("nosql_page_delay_seconds", _DEFAULT_PAGE_DELAY_SECONDS))
+    )
     max_rows = max(0, int(config["nosql_max_rows"]))
     consistency = str(config.get("nosql_consistency") or "EVENTUAL").upper()
+    retries = max(1, int(config.get("nosql_retries", _DEFAULT_RETRIES)))
+    retry_delay = max(
+        0.0, float(config.get("nosql_retry_delay_seconds", _DEFAULT_RETRY_DELAY_SECONDS))
+    )
     rows: list[dict] = []
     page = ""
+    _LOGGER.info(
+        "Reading Oracle NoSQL table %s (page_size=%d, page_delay=%.2fs, "
+        "max_rows=%d, consistency=%s)",
+        client_table, page_size, page_delay, max_rows, consistency,
+    )
 
     while True:
         current_page_size = page_size
@@ -101,7 +143,12 @@ def query_rows(config: dict) -> list[dict]:
         kwargs: dict[str, Any] = {"query_details": details, "limit": current_page_size}
         if page:
             kwargs["page"] = page
-        response = client.query(**kwargs)
+        response = call_with_retry(
+            partial(client.query, **kwargs),
+            retries=retries,
+            base_delay=retry_delay,
+            action="Oracle NoSQL query",
+        )
         rows.extend(list(getattr(response.data, "items", None) or []))
         if max_rows and len(rows) >= max_rows:
             break
@@ -111,6 +158,11 @@ def query_rows(config: dict) -> list[dict]:
         if not next_page or next_page == page:
             break
         page = next_page
+        if page_delay:
+            _LOGGER.info(
+                "Pacing Oracle NoSQL reads: sleeping %.2fs before next page", page_delay
+            )
+            time.sleep(page_delay)
 
     _LOGGER.info("Read %d row(s) from Oracle NoSQL table %s", len(rows), client_table)
     return rows[:max_rows] if max_rows else rows

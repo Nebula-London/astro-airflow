@@ -56,9 +56,16 @@ def build_cv_config(raw: dict) -> dict:
         ),
         "nosql_table": str(nosql.get("table") or _DEFAULT_TABLE).strip(),
         "nosql_document_field": str(nosql.get("document_field") or "document").strip(),
-        "nosql_page_size": max(1, int(nosql.get("page_size", 500))),
+        "nosql_page_size": max(1, int(nosql.get("page_size", 10))),
+        "nosql_page_delay_seconds": max(
+            0.0, float(nosql.get("page_delay_seconds", 1.0))
+        ),
         "nosql_max_rows": max(0, int(nosql.get("max_rows", 0))),
         "nosql_consistency": consistency,
+        "nosql_retries": max(1, int(nosql.get("retries", 5))),
+        "nosql_retry_delay_seconds": max(
+            0.0, float(nosql.get("retry_delay_seconds", 1.0))
+        ),
         "report_top_n": max(0, int(raw.get("report_top_n", 20))),
     }
     _LOGGER.info(

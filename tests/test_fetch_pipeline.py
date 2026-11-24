@@ -97,3 +97,27 @@ def test_mapped_fetch_parse_and_cross_portal_merge(monkeypatch, tmp_path):
         rows = list(csv.DictReader(handle))
     assert len(rows) == 1
     assert "jobserve:" in rows[0]["sources"] and "totaljobs:" in rows[0]["sources"]
+
+
+def test_fetch_target_prefers_role_specific_url_override(monkeypatch, tmp_path):
+    seen = []
+
+    def _capture(url, timeout=30.0, retries=3):
+        seen.append(url)
+        return _fake_fetch(url, timeout, retries)
+
+    monkeypatch.setattr(
+        fetching,
+        "read_portal_urls",
+        lambda: {
+            "jobserve": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=GENERIC",
+            "jobserve::aws": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=AWS123",
+            "totaljobs": "https://www.totaljobs.com/jobs/{query}",
+        },
+    )
+    monkeypatch.setattr(fetching, "fetch", _capture)
+
+    target = {"key": "jobserve::aws", "portal": "jobserve", "role": "aws"}
+    fetching.fetch_target(target, _config(tmp_path))
+
+    assert seen == ["https://www.jobserve.com/gb/en/JobListing.aspx?shid=AWS123"]

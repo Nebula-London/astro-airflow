@@ -22,7 +22,12 @@ skill_dir: "include/cv_skill"
 oracle_nosql:
   table: "jobserve_seen"
   document_field: "document"
-  page_size: 500
+  # The table is limited to 50 read units/sec (~50 KB/sec). Keep pages small
+  # and pace them; 429 responses are retried with exponential backoff.
+  page_size: 10
+  page_delay_seconds: 1.0
+  retries: 5
+  retry_delay_seconds: 1.0
   max_rows: 0        # 0 = all rows
   consistency: "EVENTUAL"
 

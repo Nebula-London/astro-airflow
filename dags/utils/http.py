@@ -1,11 +1,11 @@
-"""HTTP GET with a browser user-agent, retrying transport errors with backoff."""
+"""HTTP GET with a browser user-agent, retrying transport errors with jitter."""
 from __future__ import annotations
 
 import logging
-import time
 import urllib.request
 
 from dags.utils.constants import HEADERS
+from dags.utils.jitter import jittered_backoff, sleep_for
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,8 +24,8 @@ def fetch(url: str, timeout: float = 30.0, retries: int = 3) -> tuple[str, str]:
             last_error = exc
             if attempt < retries - 1:
                 _LOGGER.info(
-                    "Retrying a JobServe request after a transport error (%d/%d)",
+                    "Retrying a portal request after a transport error (%d/%d)",
                     attempt + 1, retries,
                 )
-                time.sleep(1.5 ** attempt)
+                sleep_for(jittered_backoff(attempt))
     raise RuntimeError(f"request failed after {retries} attempt(s): {last_error}")

@@ -38,6 +38,10 @@ jd_dir: ""            # <output_dir>/jds
 
 workers: 6            # parallel detail-page fetches within one mapped task
 delay_seconds: 0.0
+# Spread mapped targets over this window so they do not hit portals in lockstep.
+portal_stagger_seconds: 30.0
+# Random pause before each portal request (also jitters retry backoff).
+request_jitter_seconds: 2.0
 timeout_seconds: 30.0
 http_retries: 3
 limit: 0              # 0 = all listing rows (debug: e.g. 5)

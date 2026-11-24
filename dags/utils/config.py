@@ -12,7 +12,6 @@ from pathlib import Path
 import yaml
 
 from dags.portals.registry import implemented_portals, supported_portals
-from dags.utils.constants import PORTAL_URLS_VARIABLE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,8 +96,8 @@ def build_targets(raw: dict, urls: dict[str, str]) -> tuple[list[dict], dict[str
     for portal, options in settings.items():
         if options["enabled"] and portal not in available:
             message = (
-                f"Portal '{portal}' is enabled but has no URL template in Airflow "
-                f"Variable '{PORTAL_URLS_VARIABLE}'."
+                f"Portal '{portal}' is enabled but has no URLs in Airflow "
+                f"Variable '{portal}_search_urls'."
             )
             if strict:
                 raise ValueError(message)
@@ -114,7 +113,7 @@ def build_targets(raw: dict, urls: dict[str, str]) -> tuple[list[dict], dict[str
             if role["portal"] and portal not in available:
                 raise ValueError(
                     f"Role '{role['name']}' targets portal '{portal}', but that "
-                    f"portal has no URL template in '{PORTAL_URLS_VARIABLE}'."
+                    f"portal has no URLs in '{portal}_search_urls'."
                 )
             if portal not in available or portal in role["exclude_portals"]:
                 continue
@@ -136,10 +135,14 @@ def build_targets(raw: dict, urls: dict[str, str]) -> tuple[list[dict], dict[str
                 }
             )
 
+    for index, target in enumerate(targets):
+        target["index"] = index
+        target["target_count"] = len(targets)
+
     if not targets:
         raise ValueError(
             "No search targets were built. Enable a portal in jobs_config.yaml "
-            f"and add its URL template to Airflow Variable '{PORTAL_URLS_VARIABLE}'."
+            "and add its role URLs to the '<portal>_search_urls' Airflow Variable."
         )
     return targets, settings
 
@@ -167,6 +170,12 @@ def build_config(raw: dict, urls: dict[str, str]) -> dict:
         "jd_dir": str(Path(str(raw.get("jd_dir") or output_path / "jds")).expanduser()),
         "workers": max(1, int(raw.get("workers", 6))),
         "delay_seconds": max(0.0, float(raw.get("delay_seconds", 0.0))),
+        "portal_stagger_seconds": max(
+            0.0, float(raw.get("portal_stagger_seconds", 30.0))
+        ),
+        "request_jitter_seconds": max(
+            0.0, float(raw.get("request_jitter_seconds", 2.0))
+        ),
         "timeout_seconds": float(raw.get("timeout_seconds", 30.0)),
         "http_retries": max(1, int(raw.get("http_retries", 3))),
         "limit": max(0, int(raw.get("limit", 0))),

@@ -196,3 +196,54 @@ def test_save_state_merges_new_sources(tmp_path):
     save_state(str(path), [second])
     record = json.loads(path.read_text(encoding="utf-8"))["seen"][canonical_uid(second)]
     assert {source["portal"] for source in record["sources"]} == {"jobserve", "totaljobs"}
+
+
+def test_legacy_role_urls_merge_with_portal_templates(monkeypatch):
+    from dags.connections import portal_secrets
+
+    values = {
+        portal_secrets.PORTAL_URLS_VARIABLE: json.dumps(
+            {"totaljobs": "https://www.totaljobs.com/jobs/{query}"}
+        ),
+        portal_secrets.LEGACY_SEARCH_URLS_VARIABLE: json.dumps(
+            {
+                "aws": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=AWS",
+                "data engineer": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=DE",
+            }
+        ),
+    }
+    monkeypatch.setattr(
+        portal_secrets, "_raw_value", lambda variable, env_name: values.get(variable, "")
+    )
+
+    urls = portal_secrets.read_portal_urls()
+
+    assert urls["totaljobs"] == "https://www.totaljobs.com/jobs/{query}"
+    assert urls["jobserve::aws"].endswith("shid=AWS")
+    assert urls["jobserve::data engineer"].endswith("shid=DE")
+    assert urls["jobserve"].endswith("shid=AWS")
+
+
+def test_per_portal_role_url_variables(monkeypatch):
+    from dags.connections import portal_secrets
+
+    values = {
+        "totaljobs_search_urls": json.dumps(
+            {
+                "aws": "https://www.totaljobs.com/jobs/aws",
+                "data engineer": "https://www.totaljobs.com/jobs/data-engineer",
+            }
+        ),
+        "cw_search_urls": json.dumps({"aws": "https://www.cwjobs.co.uk/jobs/aws"}),
+    }
+    monkeypatch.setattr(
+        portal_secrets, "_raw_value", lambda variable, env_name: values.get(variable, "")
+    )
+
+    urls = portal_secrets.read_portal_urls()
+
+    assert urls["totaljobs::aws"] == "https://www.totaljobs.com/jobs/aws"
+    assert urls["totaljobs::data engineer"] == "https://www.totaljobs.com/jobs/data-engineer"
+    assert urls["cw::aws"] == "https://www.cwjobs.co.uk/jobs/aws"
+    assert urls["totaljobs"] == urls["totaljobs::aws"]
+    assert urls["cw"] == urls["cw::aws"]

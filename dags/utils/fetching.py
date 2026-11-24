@@ -2,13 +2,14 @@
 
 This module is portal-agnostic: all site-specific parsing is delegated to the
 adapter returned by :func:`dags.portals.registry.get_adapter`. URLs are read
-from the secret store inside the mapped task so they never enter XCom.
+from the secret store inside the mapped task so they never enter XCom. A
+``portal::role`` override (for a legacy saved JobServe search) is preferred
+over the portal-wide template.
 """
 from __future__ import annotations
 
 import logging
 import re
-import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
@@ -18,6 +19,7 @@ from dags.portals.registry import get_adapter
 from dags.utils.constants import COUNT_COLS
 from dags.utils.http import fetch
 from dags.utils.identity import canonical_uid
+from dags.utils.jitter import jittered_backoff, random_delay, sleep_for, target_stagger
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +47,10 @@ def fetch_listing(url: str, adapter, config: dict) -> list[dict]:
     if max_page > 1:
         _LOGGER.info("Listing has %d page(s)", max_page)
         for page in range(2, max_page + 1):
+            pause = random_delay(config.get("request_jitter_seconds", 2.0))
+            if pause:
+                _LOGGER.debug("Pausing %.2fs before page %d", pause, page)
+                sleep_for(pause)
             try:
                 page_html, page_final = fetch(
                     with_page(url, page),
@@ -78,13 +84,25 @@ def fetch_target(target: dict, config: dict) -> dict:
     portal = str(target["portal"]).strip().lower()
     role = str(target["role"]).strip()
     adapter = get_adapter(portal)
-    template = read_portal_urls().get(portal)
+    urls = read_portal_urls()
+    template = (
+        urls.get(target["key"])
+        or urls.get(str(target["key"]).lower())
+        or urls.get(portal)
+    )
     if not template:
         raise ValueError(
-            f"No URL template for portal '{portal}'. "
-            "Add it to the 'job_search_urls' Airflow Variable."
+            f"No URL template for portal '{portal}' (target '{target['key']}'). "
+            f"Add it to the '{portal}_search_urls' Airflow Variable."
         )
     url = build_search_url(template, role, getattr(adapter, "QUERY_PARAM", ""))
+    delay = target_stagger(target, config.get("portal_stagger_seconds", 30.0))
+    delay += random_delay(config.get("request_jitter_seconds", 2.0))
+    if delay:
+        _LOGGER.info(
+            "Staggering %s for %.1fs before its first request", target["key"], delay
+        )
+        sleep_for(delay)
     _LOGGER.info("Fetching %s (%s on %s)", target["key"], role, portal)
     items = fetch_listing(url, adapter, config)
     return {
@@ -103,12 +121,16 @@ def parse_item(item: dict, adapter, portal: str, role: str, config: dict) -> dic
     detail = adapter.detail_url(code, item)
     if detail:
         for attempt in range(config["http_retries"]):
+            pause = random_delay(config.get("request_jitter_seconds", 2.0))
+            if pause:
+                _LOGGER.debug("Pausing %.2fs before detail %s", pause, code)
+                sleep_for(pause)
             try:
                 html, _ = fetch(detail, config["timeout_seconds"], 1)
                 return adapter.parse_detail(html, code, item, portal, role)
             except Exception:  # noqa: BLE001 - fall back to the listing row
                 if attempt < config["http_retries"] - 1:
-                    time.sleep(1.5 ** attempt)
+                    sleep_for(jittered_backoff(attempt))
     return adapter.fallback_item_job(item, portal, role)
 
 
