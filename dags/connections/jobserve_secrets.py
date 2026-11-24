@@ -11,9 +11,7 @@ import json
 import logging
 import os
 
-from airflow.sdk import Variable
-
-from dags.utils.constants import SEARCH_URLS_VARIABLE
+from dags.utils.constants import LEGACY_SEARCH_URLS_VARIABLE as SEARCH_URLS_VARIABLE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +20,9 @@ def read_search_urls() -> dict[str, str]:
     """Read ``{search name: URL}`` from the Airflow Variable or env fallback."""
     raw = ""
     try:
-        raw = Variable.get(SEARCH_URLS_VARIABLE, default="")
+        import airflow.sdk
+
+        raw = airflow.sdk.Variable.get(SEARCH_URLS_VARIABLE, default="")
     except Exception as exc:  # noqa: BLE001 - local/dev fallback
         _LOGGER.info(
             "Airflow Variable %s is unavailable (%s); using the environment fallback",

@@ -7,3 +7,4 @@ include/jobserve/
 include/cv/
 astro
 dags.*
+.opencode

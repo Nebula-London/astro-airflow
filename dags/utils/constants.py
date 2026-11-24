@@ -34,12 +34,15 @@ DETAIL_IDS = [
     "md_email",
 ]
 COUNT_COLS = ("found", "dup", "tracker", "processed", "unfetched", "new")
-SEARCH_URLS_VARIABLE = "jobserve_search_urls"
+PORTAL_URLS_VARIABLE = "job_search_urls"
+PORTAL_URLS_ENV = "JOB_SEARCH_URLS"
+LEGACY_SEARCH_URLS_VARIABLE = "jobserve_search_urls"
 TRACKER_COLUMNS = [
+    "uid", "canonical_hash", "portal", "source_code", "sources",
     "code", "url", "title", "location", "rate", "rate_min", "rate_max",
     "ir35", "agent", "agency", "first_seen", "jd_file", "fit",
-    "missing_terms", "cv_pdf", "cv_built_on", "status", "applied_on",
-    "rate_submitted", "consultancy", "client", "notes", "reason",
+    "missing_terms", "cv_pdf", "cv_built_on", "status", "applied_via",
+    "applied_on", "rate_submitted", "consultancy", "client", "notes", "reason",
 ]
 RATE_RE = re.compile(
     r"(?P<amount>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<thousand>k)?\s*"

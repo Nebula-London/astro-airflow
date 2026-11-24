@@ -52,12 +52,79 @@ Astro Runtime used by `astro dev start` has its own Python version. Run
 `astro dev start` in the container terminal. VS Code forwards the Airflow UI
 on port 8080 and Postgres on port 5432.
 
+Multi-portal job search
+=======================
+
+The `jobserve_new_jobs` DAG is now portal-agnostic. Roles are listed once in
+`dags/config/jobs_config.yaml`; one URL template per job site is stored in the
+Airflow Variable `job_search_urls`. Every role fans out to all enabled portals
+with a template, so `aws` is not repeated for each site.
+
+Config (`dags/config/jobs_config.yaml`):
+
+```yaml
+searches:
+  - name: "aws"                 # no portal => search all enabled portals
+  - name: "data engineer"
+  - name: "platform engineer"
+    portal: "cw"                # optional: restrict one role to one portal
+  - name: "aws"
+    exclude_portals: ["linkedin"]
+
+portals:
+  jobserve:  { enabled: true }
+  totaljobs: { enabled: true }
+  cw:        { enabled: true }
+  indeed:    { enabled: false } # no verified public API/feed yet
+  linkedin:  { enabled: false } # public search is JS-driven/anti-bot
+```
+
+Airflow Variable `job_search_urls` (JSON object, one template per portal):
+
+```json
+{
+  "jobserve": "https://www.jobserve.com/gb/en/JobListing.aspx?shid=...",
+  "totaljobs": "https://www.totaljobs.com/jobs/{query}/in-manchester?radius=30",
+  "cw": "https://www.cwjobs.co.uk/jobs/{query}",
+  "indeed": "https://uk.indeed.com/jobs?q={query}"
+}
+```
+
+- `{query}` is replaced at task runtime with the role from config. Path roles
+  are hyphenated (`data engineer` -> `data-engineer`); query roles are
+  plus-encoded.
+- The legacy `jobserve_search_urls` Variable / `JOBSERVE_SEARCH_URLS` env var
+  still work, but only search JobServe with a fixed saved URL. Migrate to the
+  new Variable to enable fan-out.
+- A URL never enters config, DAG code, XCom or logs. The mapped tasks receive
+  only `{"key": "totaljobs::aws", "portal": "totaljobs", "role": "aws"}`.
+- JobServe is intentionally a fixed saved search: its `shid` URL is stored
+  without `{query}` and used as-is for every role (its adapter declares no
+  query parameter). Totaljobs/CWJobs use `{query}` in the path. Indeed/LinkedIn
+  templates can be added later; verification is deferred.
+
+Portals with a working adapter: `jobserve`, `totaljobs`, `cw` (CWJobs reuses the
+Totaljobs adapter). `indeed` and `linkedin` are registered but disabled until
+their adapters are implemented and verified. Adding a portal means adding one
+entry to `ADAPTERS` in `dags/portals/registry.py`, one config entry and one URL
+template -- the DAG wiring does not change.
+
+Each mapped `fetch_search_codes` / `parse_job_details` pair handles one
+`portal::role` target, so retries are isolated per site. The `deduplicate_jobs`
+task merges results by canonical identity (`hash:<canonical_hash>`) and records
+every source (`jobserve:ABC...`, `totaljobs:108217598`) on a single tracker row.
+If the same job is found on a second portal, the source list is extended and an
+existing status such as `applied` is preserved.
+
 Oracle NoSQL push
 =================
 
 The `jobserve_new_jobs` DAG ends with a `push_to_nosql` task that upserts each
-new hashed role into the `jobserve_seen` table. The row key is `uid` and the
-DAG's `hash` is stored as `content_hash`; the full job is stored in `document`.
+new canonical role into the `jobserve_seen` table. The row key is the canonical
+`uid` (`hash:<canonical_hash>`), `hash` is stored as `content_hash`, and the
+full job -- including its `portal`, `search_role` and `sources` list -- is
+stored in `document`. Existing table columns are unchanged for compatibility;
+adding queryable portal columns would require a table schema change.
 
 Requirements and credentials:
 

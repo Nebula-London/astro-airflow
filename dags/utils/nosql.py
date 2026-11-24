@@ -15,6 +15,7 @@ from typing import Any
 
 from dags.connections.nosql_connection import connection_settings
 from dags.utils.dedupe import load_state
+from dags.utils.identity import canonical_uid
 from dags.utils.output import dated_name
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,23 +29,26 @@ def state_first_seen(state: dict, uid: str) -> str:
 
 
 def build_row(job: dict, first_seen: str, source_file: str) -> dict:
-    """Build one row matching the table schema, with the full job in the JSON column."""
+    """Build one row matching the table schema, with the full job in JSON."""
+    document = dict(job)
+    document.setdefault("canonical_hash", job.get("hash", ""))
+    document.setdefault("sources", [])
     return {
-        "uid": job["uid"],
+        "uid": canonical_uid(job),
         "content_hash": job.get("hash", ""),
-        "code": job.get("code", ""),
+        "code": job.get("source_code") or job.get("code", ""),
         "slug": job.get("slug", ""),
         "permalink": job.get("permalink", ""),
         "first_seen": first_seen,
         "source_file": source_file,
-        "document": job,
+        "document": document,
     }
 
 
 def push_jobs(config: dict, jobs: list[dict]) -> int:
-    """Upsert each hashed job into Oracle NoSQL and return the row count."""
+    """Upsert each canonical job into Oracle NoSQL and return the row count."""
     if not jobs:
-        _LOGGER.info("No new JobServe roles to push to Oracle NoSQL")
+        _LOGGER.info("No new roles to push to Oracle NoSQL")
         return 0
     import oci
 
@@ -53,7 +57,7 @@ def push_jobs(config: dict, jobs: list[dict]) -> int:
     source_file = dated_name()
     for job in jobs:
         details = oci.nosql.models.UpdateRowDetails(
-            value=build_row(job, state_first_seen(state, job["uid"]), source_file),
+            value=build_row(job, state_first_seen(state, canonical_uid(job)), source_file),
             compartment_id=compartment,
         )
         client.update_row(table_name_or_id=table, update_row_details=details)

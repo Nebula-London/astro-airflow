@@ -1,3 +1,4 @@
+# DEPRECATED: kept for reference only. The DAG now loads jobs_config.yaml.
 # Runtime settings for the jobserve_new_jobs DAG.
 #
 # IMPORTANT: search URLs contain a private JobServe `shid`. Never put a shid

@@ -173,7 +173,7 @@ def parse_job(html: str, code: str) -> dict:
 def listing_title(html: str, code: str) -> str:
     """Extract the search-row title for a code, or an empty string."""
     match = re.search(
-        r"/gb/en/" + re.escape(code) + r'\.jsjob"[^>]*title="[^"]*? ([^"]+?)\s+job"',
+        r"/gb/en/" + re.escape(code) + r'\.jsjob"[^>]*title="([^"]+?)\s+job\b[^"]*"',
         html, re.I,
     )
     return match.group(1).strip() if match else ""

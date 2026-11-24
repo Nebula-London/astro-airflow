@@ -9,6 +9,6 @@ from pathlib import Path
 
 from dags.factory.jobserve_factory import build_jobserve_dag
 
-CONFIG_PATH = str(Path(__file__).resolve().parent / "config" / "jobserve_config.yaml")
+CONFIG_PATH = str(Path(__file__).resolve().parent / "config" / "jobs_config.yaml")
 
 dag = build_jobserve_dag(config_path=CONFIG_PATH)

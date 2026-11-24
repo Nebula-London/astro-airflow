@@ -1,0 +1,47 @@
+# Runtime config for the multi-portal job-search DAG.
+#
+# Roles live here; one URL (template) per portal lives in the Airflow Variable
+# `job_search_urls` (see README). A role with no `portal` fans out to every
+# enabled portal that has a URL. Use `exclude_portals` to opt a role out of
+# specific sites, or `portal` to restrict a role to exactly one site.
+# JobServe uses a fixed saved `shid` URL (no {query}); query-based portals such
+# as Totaljobs/CWJobs use {query} in their URL.
+
+searches:
+  - name: "aws"
+  - name: "data engineer"
+  # - name: "platform engineer"
+  # - name: "data engineer"
+  #   portal: "cw"
+  # - name: "aws"
+  #   exclude_portals: ["linkedin"]
+
+portals:
+  jobserve:
+    enabled: true
+  totaljobs:
+    enabled: true
+  cw:
+    enabled: true
+  indeed:
+    enabled: false   # no public API/feed verified yet
+  linkedin:
+    enabled: false   # public search is JS-driven/anti-bot; use an approved API
+
+strict_searches: false   # true = fail if an enabled portal has no URL template
+
+# All paths are optional; empty values resolve to the defaults shown.
+output_dir: ""        # <project>/include/jobserve
+state_file: ""        # <output_dir>/state.json
+tracker_file: ""      # <output_dir>/applications.csv
+jd_dir: ""            # <output_dir>/jds
+
+workers: 6            # parallel detail-page fetches within one mapped task
+delay_seconds: 0.0
+timeout_seconds: 30.0
+http_retries: 3
+limit: 0              # 0 = all listing rows (debug: e.g. 5)
+
+dedupe: true          # skip roles in state / prior extracts / tracker
+use_tracker: true     # append new roles to applications.csv
+status_style: ""      # "" = plain ("new"), "numbered" = "1-new"
